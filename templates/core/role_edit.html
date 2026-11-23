@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head"><h1>Permissions : {{ role.name }}</h1></div>
+<form method="post" class="card">{% csrf_token %}
+<div class="table-wrap"><table class="perm">
+<tr><th>Module</th>{% for l in labels %}<th>{{ l }}</th>{% endfor %}</tr>
+{% for row in rows %}<tr><td>{{ row.module.icon }} {{ row.module.name }}</td>
+  {% for c in row.cells %}<td><input type="checkbox" class="check" name="{{ c.name }}" {% if c.checked %}checked{% endif %}></td>{% endfor %}</tr>{% endfor %}
+</table></div>
+<div class="actions"><button class="btn primary" type="submit">Enregistrer</button><a class="btn" href="{% url 'core:roles' %}">Retour</a></div>
+</form>
+{% endblock %}

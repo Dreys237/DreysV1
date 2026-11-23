@@ -1,0 +1,23 @@
+{% extends 'base.html' %}{% load erp_extras %}
+{% block content %}
+<div class="page-head"><h1>Produits & stock</h1>
+  <div class="actions">
+    <a class="btn" href="{% url 'inventory:movement_list' %}">Mouvements</a>
+    {% can 'inventory' 'create' as ok %}{% if ok %}<a class="btn" href="{% url 'inventory:movement_create' %}">Mouvement de stock</a>
+    <a class="btn primary" href="{% url 'inventory:product_create' %}">+ Nouveau produit</a>{% endif %}</div></div>
+<form class="filters" method="get">
+  <input class="input" name="q" placeholder="Désignation, SKU, code-barres…" value="{{ q }}">
+  <label><input type="checkbox" name="low" value="1" {% if low %}checked{% endif %}> Stock faible uniquement</label>
+  <button class="btn" type="submit">Filtrer</button>
+</form>
+<div class="card table-wrap"><table>
+<tr><th>SKU</th><th>Désignation</th><th class="num">Prix de vente</th><th class="num">Stock</th><th>Statut</th></tr>
+{% for p in page %}<tr>
+  <td>{{ p.sku }}</td>
+  <td><a href="{% url 'inventory:product_detail' p.pk %}">{{ p.name }}</a>{% if p.is_demo %} <span class="badge demo">DÉMO</span>{% endif %}</td>
+  <td class="num">{{ p.sale_price|money }}</td>
+  <td class="num">{% if p.is_stockable %}{{ p.stock_qty|qty }} {{ p.unit }}{% else %}—{% endif %}</td>
+  <td>{% if not p.is_active %}<span class="badge">Inactif</span>{% elif p.is_stockable and p.min_stock > 0 and p.stock_qty <= p.min_stock %}<span class="badge warn">Stock faible</span>{% else %}<span class="badge ok">OK</span>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="5" class="muted">Aucun produit.</td></tr>{% endfor %}
+</table>{% include '_pagination.html' %}</div>
+{% endblock %}

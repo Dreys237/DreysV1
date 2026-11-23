@@ -1,0 +1,22 @@
+{% extends 'base.html' %}{% load erp_extras %}
+{% block content %}
+<div class="page-head"><h1>Applications</h1></div>
+<div class="mods">
+{% for m in modules %}
+  <div class="mod {% if not m.is_active %}off{% endif %}">
+    <div class="ico">{{ m.icon }}</div>
+    <strong>{{ m.name }}</strong>
+    <span class="muted">{{ m.description }}</span>
+    {% if m.depends_on.all %}<span class="muted">Requiert : {% for d in m.depends_on.all %}{{ d.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>{% endif %}
+    <div>
+      {% if not m.is_implemented %}<span class="badge">Bientôt disponible</span>
+      {% elif m.is_active %}<span class="badge ok">Actif</span>{% else %}<span class="badge warn">Désactivé</span>{% endif %}
+    </div>
+    {% if m.is_implemented and is_erp_admin %}
+      <form method="post" action="{% url 'core:module_toggle' m.code %}">{% csrf_token %}
+        <button class="btn small {% if m.is_active %}danger{% else %}primary{% endif %}" type="submit">{% if m.is_active %}Désactiver{% else %}Activer{% endif %}</button></form>
+    {% endif %}
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}{% load erp_extras %}
+{% block content %}
+<div class="page-head"><h1>Facture {{ invoice }} {% if invoice.status == 'paid' %}<span class="badge ok">Payée</span>{% elif invoice.status == 'validated' %}<span class="badge info">Validée</span>{% elif invoice.status == 'cancelled' %}<span class="badge bad">Annulée</span>{% else %}<span class="badge">Brouillon</span>{% endif %}{% if invoice.is_demo %} <span class="badge demo">DÉMO</span>{% endif %}</h1>
+  <div class="actions no-print">
+    <button class="btn" type="button" onclick="window.print()">Imprimer / PDF</button>
+    {% if invoice.status == 'draft' %}
+      {% can 'sales' 'edit' as ok_ed %}{% if ok_ed %}<a class="btn" href="{% url 'sales:invoice_edit' invoice.pk %}">Modifier</a>{% endif %}
+      {% can 'sales' 'validate' as ok_va %}{% if ok_va %}<form class="inline" method="post" action="{% url 'sales:invoice_validate' invoice.pk %}" onsubmit="return confirm('Valider cette facture ? Le stock sera mis à jour.')">{% csrf_token %}<button class="btn primary" type="submit">Valider</button></form>{% endif %}
+      {% can 'sales' 'delete' as ok_del %}{% if ok_del %}<form class="inline" method="post" action="{% url 'sales:invoice_delete' invoice.pk %}" onsubmit="return confirm('Supprimer ce brouillon ?')">{% csrf_token %}<button class="btn danger" type="submit">Supprimer</button></form>{% endif %}
+    {% elif invoice.status == 'validated' and not payments %}
+      {% can 'sales' 'cancel' as ok_ca %}{% if ok_ca %}<form class="inline" method="post" action="{% url 'sales:invoice_cancel' invoice.pk %}" onsubmit="return confirm('Annuler cette facture ? Le stock sera rétabli.')">{% csrf_token %}<button class="btn danger" type="submit">Annuler la facture</button></form>{% endif %}
+    {% endif %}
+  </div></div>
+
+<div class="card">
+  <div class="two"><div><strong>{{ invoice.company.name }}</strong><br>{{ invoice.company.address }} {{ invoice.company.city }}<br>{{ invoice.company.country }}{% if invoice.company.tax_id %}<br>NIU : {{ invoice.company.tax_id }}{% endif %}</div>
+  <div><strong>Client :</strong> {{ invoice.customer.name }}<br>{{ invoice.customer.address }} {{ invoice.customer.city }}<br>Date : {{ invoice.date|date:"d/m/Y" }}{% if invoice.due_date %}<br>Échéance : {{ invoice.due_date|date:"d/m/Y" }}{% endif %}</div></div>
+  <div class="table-wrap"><table style="margin-top:14px">
+  <tr><th>Description</th><th class="num">Qté</th><th class="num">Prix unit.</th><th class="num">Remise</th><th class="num">Taxe</th><th class="num">Total HT</th></tr>
+  {% for l in lines %}<tr><td>{{ l.description }}</td><td class="num">{{ l.quantity|qty }}</td><td class="num">{{ l.unit_price|money }}</td><td class="num">{{ l.discount|qty }}%</td><td class="num">{{ l.tax_rate|qty }}%</td><td class="num">{{ l.line_ht|money }}</td></tr>
+  {% empty %}<tr><td colspan="6" class="muted">Aucune ligne.</td></tr>{% endfor %}</table></div>
+  <div class="totals">
+    <div><span>Total HT</span><span>{{ invoice.total_ht|money }}</span></div>
+    <div><span>Taxes</span><span>{{ invoice.total_tax|money }}</span></div>
+    <div class="t"><span>Total TTC ({{ invoice.company.currency }})</span><span>{{ invoice.total_ttc|money }}</span></div>
+    {% if invoice.status == 'validated' or invoice.status == 'paid' %}
+    <div><span>Payé</span><span>{{ invoice.amount_paid|money }}</span></div>
+    <div><span>Reste dû</span><span>{{ invoice.balance|money }}</span></div>{% endif %}
+  </div>
+  {% if invoice.notes %}<p class="muted">{{ invoice.notes|linebreaksbr }}</p>{% endif %}
+</div>
+
+{% if invoice.status == 'validated' or invoice.status == 'paid' %}
+<div class="card no-print"><h2>Paiements</h2>
+  <table>{% for p in payments %}<tr><td>{{ p.date|date:"d/m/Y" }}</td><td>{{ p.get_method_display }}</td><td>{{ p.reference }}</td><td class="num">{{ p.amount|money }}</td></tr>
+  {% empty %}<tr><td class="muted">Aucun paiement enregistré.</td></tr>{% endfor %}</table>
+  {% if invoice.status == 'validated' %}{% can 'sales' 'edit' as ok_pay %}{% if ok_pay %}
+  <form method="post" action="{% url 'sales:payment_add' invoice.pk %}" class="filters" style="margin-top:12px">{% csrf_token %}
+    {{ payment_form.date }}{{ payment_form.amount }}{{ payment_form.method }}{{ payment_form.reference }}
+    <button class="btn primary" type="submit">Enregistrer le paiement</button></form>{% endif %}{% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head"><h1>Journal d'activité</h1></div>
+<div class="card table-wrap"><table>
+<tr><th>Date</th><th>Utilisateur</th><th>Module</th><th>Action</th><th>Objet</th></tr>
+{% for a in page %}<tr><td>{{ a.created|date:"d/m/Y H:i" }}</td><td>{{ a.user|default:"Système" }}</td><td>{{ a.module }}</td><td>{{ a.action }}</td><td>{{ a.object_repr }}</td></tr>
+{% empty %}<tr><td colspan="5" class="muted">Aucune activité enregistrée.</td></tr>{% endfor %}
+</table>{% include '_pagination.html' %}</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head"><h1>Rôles & permissions</h1></div>
+<div class="notice">Les permissions sont vérifiées côté serveur. Seuls les modules développés sont configurables. Les rôles Super administrateur et Administrateur ont tous les droits sur les modules actifs.</div>
+<div class="card table-wrap"><table>
+{% for r in roles %}<tr><td>{{ r.name }}</td><td class="num"><a class="btn small" href="{% url 'core:role_edit' r.pk %}">Voir / modifier</a></td></tr>{% endfor %}
+</table></div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% load static %}<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connexion — DREY'S ERP</title><link rel="stylesheet" href="{% static 'css/app.css' %}"></head>
+<body><div class="login-wrap"><div class="login-card">
+  <h1>DREY'S <span style="color:#f26b5b">ERP</span></h1>
+  <p>Connectez-vous à votre espace de gestion.</p>
+  <form method="post">{% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    {{ form.non_field_errors }}
+    <div class="field"><label for="id_username">Identifiant</label>{{ form.username }}</div>
+    <div class="field"><label for="id_password">Mot de passe</label>{{ form.password }}</div>
+    <button class="btn primary" type="submit" style="width:100%">Se connecter</button>
+  </form>
+</div></div></body></html>

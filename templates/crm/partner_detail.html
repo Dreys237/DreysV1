@@ -1,0 +1,25 @@
+{% extends 'base.html' %}{% load erp_extras %}
+{% block content %}
+<div class="page-head"><h1>{{ partner.name }} <span class="badge">{{ partner.get_kind_display }}</span>{% if partner.is_demo %} <span class="badge demo">DÉMO</span>{% endif %}</h1>
+  <div class="actions no-print">
+    {% can 'crm' 'edit' as ok_edit %}
+    {% if ok_edit %}
+      {% if partner.kind == 'prospect' %}<form class="inline" method="post" action="{% url 'crm:partner_convert' partner.pk %}">{% csrf_token %}<button class="btn primary" type="submit">Convertir en client</button></form>{% endif %}
+      <a class="btn" href="{% url 'crm:partner_edit' partner.pk %}">Modifier</a>
+    {% endif %}
+    {% can 'crm' 'delete' as ok_del %}
+    {% if ok_del %}<form class="inline" method="post" action="{% url 'crm:partner_delete' partner.pk %}" onsubmit="return confirm('Supprimer définitivement ce contact ?')">{% csrf_token %}<button class="btn danger" type="submit">Supprimer</button></form>{% endif %}
+  </div></div>
+<div class="two">
+  <div class="card"><h2>Coordonnées</h2>
+    <p>Email : {{ partner.email|default:"—" }}<br>Téléphone : {{ partner.phone|default:"—" }}<br>Adresse : {{ partner.address|default:"—" }} {{ partner.city }}<br>NIU : {{ partner.tax_id|default:"—" }}</p>
+    {% if partner.notes %}<p class="muted">{{ partner.notes|linebreaksbr }}</p>{% endif %}</div>
+  <div class="card"><h2>Historique des échanges</h2>
+    {% can 'crm' 'create' as ok_add %}
+    {% if ok_add %}<form method="post" action="{% url 'crm:interaction_add' partner.pk %}">{% csrf_token %}
+      <div class="field">{{ interaction_form.kind }}</div><div class="field">{{ interaction_form.text }}</div>
+      <button class="btn primary small" type="submit">Ajouter</button></form><hr>{% endif %}
+    {% for i in interactions %}<p><span class="badge">{{ i.get_kind_display }}</span> <span class="muted">{{ i.created|date:"d/m/Y H:i" }} · {{ i.user|default:"—" }}</span><br>{{ i.text|linebreaksbr }}</p>
+    {% empty %}<p class="muted">Aucun échange enregistré.</p>{% endfor %}</div>
+</div>
+{% endblock %}

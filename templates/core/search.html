@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head"><h1>Recherche : « {{ q }} »</h1></div>
+{% if q|length < 2 %}<div class="card muted">Saisissez au moins 2 caractères.</div>{% endif %}
+{% if results.partners %}<div class="card"><h2>Contacts</h2>{% for p in results.partners %}<div><a href="{% url 'crm:partner_detail' p.pk %}">{{ p.name }}</a> <span class="badge">{{ p.get_kind_display }}</span></div>{% endfor %}</div>{% endif %}
+{% if results.products %}<div class="card"><h2>Produits</h2>{% for p in results.products %}<div><a href="{% url 'inventory:product_detail' p.pk %}">{{ p }}</a></div>{% endfor %}</div>{% endif %}
+{% if results.invoices %}<div class="card"><h2>Factures</h2>{% for i in results.invoices %}<div><a href="{% url 'sales:invoice_detail' i.pk %}">{{ i }}</a> — {{ i.customer }}</div>{% endfor %}</div>{% endif %}
+{% if q|length >= 2 and not results.partners and not results.products and not results.invoices %}<div class="card muted">Aucun résultat.</div>{% endif %}
+{% endblock %}

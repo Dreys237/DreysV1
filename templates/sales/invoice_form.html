@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head"><h1>{{ title }}</h1></div>
+<form method="post">{% csrf_token %}
+<div class="card form" style="max-width:none">
+  {{ form.non_field_errors }}
+  <div class="two">
+    <div class="field"><label>Client</label>{{ form.customer }}{{ form.customer.errors }}<div class="help">{{ form.customer.help_text }}</div></div>
+    <div class="two">
+      <div class="field"><label>Date</label>{{ form.date }}{{ form.date.errors }}</div>
+      <div class="field"><label>Échéance</label>{{ form.due_date }}{{ form.due_date.errors }}</div>
+    </div>
+  </div>
+  <div class="field"><label>Notes</label>{{ form.notes }}</div>
+</div>
+<div class="card">
+  <h2>Lignes</h2>
+  <div class="notice">Laissez le prix, la description ou la taxe vides pour reprendre ceux du produit / de la société. Pour supprimer une ligne existante, cochez « Suppr. ».</div>
+  {{ formset.management_form }}{{ formset.non_form_errors }}
+  <div class="table-wrap"><table>
+    <tr><th>Produit</th><th>Description</th><th>Qté</th><th>Prix unit.</th><th>Remise %</th><th>Taxe %</th>{% if formset.can_delete %}<th>Suppr.</th>{% endif %}</tr>
+    {% for f in formset %}<tr>
+      <td>{% for h in f.hidden_fields %}{{ h }}{% endfor %}{{ f.product }}{{ f.non_field_errors }}</td>
+      <td>{{ f.description }}</td><td>{{ f.quantity }}{{ f.quantity.errors }}</td><td>{{ f.unit_price }}{{ f.unit_price.errors }}</td>
+      <td>{{ f.discount }}{{ f.discount.errors }}</td><td>{{ f.tax_rate }}{{ f.tax_rate.errors }}</td>
+      {% if formset.can_delete %}<td>{{ f.DELETE }}</td>{% endif %}</tr>{% endfor %}
+  </table></div>
+</div>
+<div class="actions"><button class="btn primary" type="submit">Enregistrer le brouillon</button><a class="btn" href="{% url 'sales:invoice_list' %}">Annuler</a></div>
+</form>
+{% endblock %}

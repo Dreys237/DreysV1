@@ -1,0 +1,41 @@
+{% extends 'base.html' %}{% load erp_extras %}
+{% block content %}
+<div class="page-head"><h1>Tableau de bord</h1><span class="muted">{{ company.name }}</span></div>
+<div class="notice">Les indicateurs ci-dessous proviennent des données réellement enregistrées. Les enregistrements marqués <span class="badge demo">DÉMO</span> sont des données d'exemple.</div>
+
+<div class="grid">
+  {% if revenue_ht is not None %}
+    <div class="kpi"><div class="l">Chiffre d'affaires HT ({{ company.currency }})</div><div class="v">{{ revenue_ht|money }}</div></div>
+    <div class="kpi"><div class="l">Créances clients ({{ company.currency }})</div><div class="v">{{ receivables|money }}</div></div>
+    <div class="kpi {% if n_overdue %}bad{% endif %}"><div class="l">Factures impayées / échues</div><div class="v">{{ n_unpaid }} / {{ n_overdue }}</div></div>
+    <div class="kpi"><div class="l">Factures en brouillon</div><div class="v">{{ n_drafts }}</div></div>
+  {% endif %}
+  {% if stock_value is not None %}
+    <div class="kpi"><div class="l">Valeur du stock ({{ company.currency }})</div><div class="v">{{ stock_value|money }}</div></div>
+    <div class="kpi"><div class="l">Produits actifs</div><div class="v">{{ n_products }}</div></div>
+  {% endif %}
+  {% if n_customers is not None %}
+    <div class="kpi"><div class="l">Clients</div><div class="v">{{ n_customers }}</div></div>
+    <div class="kpi"><div class="l">Prospects</div><div class="v">{{ n_prospects }}</div></div>
+    <div class="kpi"><div class="l">Fournisseurs</div><div class="v">{{ n_suppliers }}</div></div>
+  {% endif %}
+</div>
+
+{% if chart %}
+<div class="card"><h2>Ventes HT des 6 derniers mois</h2>
+  <div class="bars">{% for b in chart %}
+    <div class="bar"><b>{{ b.value|money }}</b><i style="height:{{ b.pct }}%"></i><small>{{ b.label }}</small></div>{% endfor %}
+  </div></div>
+{% endif %}
+
+<div class="two">
+  {% if low_stock %}
+  <div class="card"><h2>⚠️ Stocks faibles</h2>
+    <table>{% for p in low_stock %}<tr><td><a href="{% url 'inventory:product_detail' p.pk %}">{{ p.name }}</a></td><td class="num">{{ p.stock_qty|qty }} / {{ p.min_stock|qty }}</td></tr>{% endfor %}</table></div>
+  {% endif %}
+  {% if recent %}
+  <div class="card"><h2>Activités récentes</h2>
+    <table>{% for a in recent %}<tr><td>{{ a.action }}<br><span class="muted">{{ a.object_repr }}</span></td><td class="muted">{{ a.created|date:"d/m H:i" }}</td></tr>{% empty %}<tr><td class="muted">Aucune activité.</td></tr>{% endfor %}</table></div>
+  {% endif %}
+</div>
+{% endblock %}

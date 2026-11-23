@@ -1,0 +1,10 @@
+{% extends 'base.html' %}{% load erp_extras %}
+{% block content %}
+<div class="page-head"><h1>Mouvements de stock</h1><a class="btn" href="{% url 'inventory:product_list' %}">← Produits</a></div>
+<div class="card table-wrap"><table>
+<tr><th>Date</th><th>Produit</th><th>Type</th><th class="num">Quantité</th><th>Entrepôt</th><th>Référence</th><th>Par</th></tr>
+{% for m in page %}<tr><td>{{ m.created|date:"d/m/Y H:i" }}</td><td><a href="{% url 'inventory:product_detail' m.product_id %}">{{ m.product.name }}</a></td>
+<td>{{ m.get_kind_display }}</td><td class="num">{{ m.quantity|qty }}</td><td>{{ m.warehouse }}</td><td>{{ m.reference }}</td><td>{{ m.user|default:"—" }}</td></tr>
+{% empty %}<tr><td colspan="7" class="muted">Aucun mouvement.</td></tr>{% endfor %}
+</table>{% include '_pagination.html' %}</div>
+{% endblock %}
